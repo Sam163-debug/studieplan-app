@@ -27,18 +27,31 @@ jobs:
         uses: actions/configure-pages@v5
         with:
           enablement: true
-      - name: Build site from production bundle
+      - name: Verify and build production site
         shell: bash
         run: |
           set -euo pipefail
           rm -rf _site
           mkdir -p _site
-          cat deploy/app.bundle.b64.part* | base64 --decode > /tmp/studieplan-app.tgz
-          tar -xzf /tmp/studieplan-app.tgz -C _site
+          cat \
+            deploy/v2.part00 deploy/v2.part01 deploy/v2.part02 deploy/v2.part03 \
+            deploy/v2.part04 deploy/v2.part05 deploy/v2.part06 deploy/v2.part07 \
+            deploy/v2.part08 deploy/v2.part09 deploy/v2.part10 deploy/v2.part11 \
+            | base64 --decode > /tmp/studieplan-v2.tgz
+          echo "88a9efb948418daef33502cb2435e46310a2d6a0d188b06e8a4f8e2c70fd0118  /tmp/studieplan-v2.tgz" | sha256sum -c -
+          gzip -t /tmp/studieplan-v2.tgz
+          tar -xzf /tmp/studieplan-v2.tgz -C _site
           test -s _site/index.html
+          test -s _site/app.js
           test -s _site/cloud-sync.js
+          node --check _site/app.js
+          node --check _site/cloud-sync.js
           if grep -q 'study-001' _site/index.html; then
             echo 'Private schedule data detected in public build' >&2
+            exit 1
+          fi
+          if grep -R -q 'ET-F01 · R1' _site; then
+            echo 'Private backup content detected in public build' >&2
             exit 1
           fi
       - name: Upload artifact
