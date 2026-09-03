@@ -41,11 +41,21 @@ jobs:
           echo "88a9efb948418daef33502cb2435e46310a2d6a0d188b06e8a4f8e2c70fd0118  /tmp/studieplan-v2.tgz" | sha256sum -c -
           gzip -t /tmp/studieplan-v2.tgz
           tar -xzf /tmp/studieplan-v2.tgz -C _site
+
+          cat deploy/v3.patch.part00 deploy/v3.patch.part01 | base64 --decode > /tmp/studieplan-v3.patch.gz
+          echo "3adea9f187fa25ce003812c0616ed73eacd241431bb411367bab4ee9072f3192  /tmp/studieplan-v3.patch.gz" | sha256sum -c -
+          gzip -t /tmp/studieplan-v3.patch.gz
+          gzip -dc /tmp/studieplan-v3.patch.gz | patch -p1 -d _site
+
           test -s _site/index.html
           test -s _site/app.js
           test -s _site/cloud-sync.js
           node --check _site/app.js
           node --check _site/cloud-sync.js
+          node --check _site/service-worker.js
+          grep -q 'eventLabelVersion=1' _site/cloud-sync.js
+          grep -q 'tryAutoReconnect' _site/cloud-sync.js
+          grep -q 'Studieplan status' _site/cloud-sync.js
           if grep -q 'study-001' _site/index.html; then
             echo 'Private schedule data detected in public build' >&2
             exit 1
