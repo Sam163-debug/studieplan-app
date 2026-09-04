@@ -33,6 +33,8 @@ jobs:
           set -euo pipefail
           rm -rf _site
           mkdir -p _site
+
+          # Rebuild the last known-good public bundle.
           cat \
             deploy/v2.part00 deploy/v2.part01 deploy/v2.part02 deploy/v2.part03 \
             deploy/v2.part04 deploy/v2.part05 deploy/v2.part06 deploy/v2.part07 \
@@ -42,20 +44,28 @@ jobs:
           gzip -t /tmp/studieplan-v2.tgz
           tar -xzf /tmp/studieplan-v2.tgz -C _site
 
-          cat deploy/v3.patch.part00 deploy/v3.patch.part01 | base64 --decode > /tmp/studieplan-v3.patch.gz
-          echo "3adea9f187fa25ce003812c0616ed73eacd241431bb411367bab4ee9072f3192  /tmp/studieplan-v3.patch.gz" | sha256sum -c -
-          gzip -t /tmp/studieplan-v3.patch.gz
-          gzip -dc /tmp/studieplan-v3.patch.gz | patch -p1 -d _site
+          # Apply the tested Google sync/color/status/reload fix.
+          cat deploy/v4.patch.part00 deploy/v4.patch.part01 | base64 --decode > /tmp/studieplan-v4.patch.gz
+          echo "4e049d0f06613acfcd2afc377ab0b587efa1ebce719a299d71854c4dd8ff4cb0  /tmp/studieplan-v4.patch.gz" | sha256sum -c -
+          gzip -t /tmp/studieplan-v4.patch.gz
+          gzip -dc /tmp/studieplan-v4.patch.gz | patch -p1 -d _site
 
           test -s _site/index.html
           test -s _site/app.js
           test -s _site/cloud-sync.js
+          test -s _site/service-worker.js
           node --check _site/app.js
           node --check _site/cloud-sync.js
           node --check _site/service-worker.js
+
+          # Feature guards.
           grep -q 'eventLabelVersion=1' _site/cloud-sync.js
+          grep -q 'ensureCategoryLabels' _site/cloud-sync.js
           grep -q 'tryAutoReconnect' _site/cloud-sync.js
           grep -q 'Studieplan status' _site/cloud-sync.js
+          grep -q 'studieplan-shell-v2' _site/service-worker.js
+
+          # Privacy guards: never publish embedded personal schedule/backup data.
           if grep -q 'study-001' _site/index.html; then
             echo 'Private schedule data detected in public build' >&2
             exit 1
