@@ -50,8 +50,11 @@ jobs:
           gzip -t /tmp/studieplan-v4.patch.gz
           gzip -dc /tmp/studieplan-v4.patch.gz | patch -p1 -d _site
 
-          # Add the hidden two-course notes page.
+          # Add the hidden two-course rich-text notes page.
           python3 tools/apply_notes.py _site
+
+          # Replace the old line-height dropdown with Goodnotes-style spacing controls.
+          python3 tools/apply_goodnotes_spacing.py _site
 
           test -s _site/index.html
           test -s _site/app.js
@@ -72,6 +75,10 @@ jobs:
           grep -q 'id="notesMA4026"' _site/index.html
           grep -q 'function queueNotesSave()' _site/app.js
           grep -q 'x.notes.ET4012' _site/app.js
+          grep -q 'data-spacing-range' _site/index.html
+          grep -q 'data-spacing-auto' _site/index.html
+          grep -q 'function initGoodnotesSpacing()' _site/app.js
+          grep -q 'function applyGoodnotesSpacing' _site/app.js
 
           # Privacy guards: never publish embedded personal schedule/backup data.
           if grep -q 'study-001' _site/index.html; then
