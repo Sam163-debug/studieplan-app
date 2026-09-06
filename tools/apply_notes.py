@@ -34,6 +34,7 @@ def toolbar(course):
           <button type="button" data-note-action="underline" title="Understruken"><u>U</u></button>
           <select data-note-action="font" aria-label="Typsnitt"><option value="system-ui">System</option><option value="Arial">Arial</option><option value="Georgia">Georgia</option><option value="Times New Roman">Times New Roman</option><option value="Verdana">Verdana</option><option value="Courier New">Courier New</option></select>
           <select data-note-action="size" aria-label="Textstorlek"><option value="12">12 px</option><option value="14">14 px</option><option value="16" selected>16 px</option><option value="18">18 px</option><option value="20">20 px</option><option value="24">24 px</option><option value="28">28 px</option><option value="32">32 px</option><option value="36">36 px</option></select>
+          <select data-note-action="lineheight" aria-label="Radavstånd" title="Radavstånd"><option value="1">Rad 1,0</option><option value="1.15">Rad 1,15</option><option value="1.5" selected>Rad 1,5</option><option value="1.75">Rad 1,75</option><option value="2">Rad 2,0</option><option value="2.5">Rad 2,5</option><option value="3">Rad 3,0</option></select>
           <label class="notes-color-wrap">Färg <input type="color" data-note-action="color" value="#111827" aria-label="Textfärg"></label>
           <button type="button" data-note-action="ul" title="Punktlista">• Lista</button>
           <button type="button" data-note-action="ol" title="Numrerad lista">1. Lista</button>
@@ -76,6 +77,7 @@ insert_anchor = "function sourceLabel(e){return e.origin==='timeedit'?'TimeEdit'
 notes_js = r'''
 let notesSaveTimer=null;
 const noteRanges={ET4012:null,MA4026:null};
+const noteBlockTags=new Set(['DIV','P','H1','H2','H3','LI']);
 function noteEditor(course){return $(course==='ET4012'?'notesET4012':'notesMA4026')}
 function sanitizeNoteHtml(html){
   const t=document.createElement('template');t.innerHTML=String(html||'');
@@ -86,9 +88,9 @@ function sanitizeNoteHtml(html){
       clean(el);
       if(blocked.has(el.tagName)){el.remove();return}
       if(!allowed.has(el.tagName)){el.replaceWith(...el.childNodes);return}
-      const keep={color:el.style.color,fontWeight:el.style.fontWeight,fontStyle:el.style.fontStyle,textDecoration:el.style.textDecoration,fontFamily:el.style.fontFamily,fontSize:el.style.fontSize};
+      const keep={color:el.style.color,fontWeight:el.style.fontWeight,fontStyle:el.style.fontStyle,textDecoration:el.style.textDecoration,fontFamily:el.style.fontFamily,fontSize:el.style.fontSize,lineHeight:el.style.lineHeight};
       [...el.attributes].forEach(a=>el.removeAttribute(a.name));
-      if(keep.color)el.style.color=keep.color;if(keep.fontWeight)el.style.fontWeight=keep.fontWeight;if(keep.fontStyle)el.style.fontStyle=keep.fontStyle;if(keep.textDecoration)el.style.textDecoration=keep.textDecoration;if(keep.fontFamily)el.style.fontFamily=keep.fontFamily;if(keep.fontSize)el.style.fontSize=keep.fontSize;
+      if(keep.color)el.style.color=keep.color;if(keep.fontWeight)el.style.fontWeight=keep.fontWeight;if(keep.fontStyle)el.style.fontStyle=keep.fontStyle;if(keep.textDecoration)el.style.textDecoration=keep.textDecoration;if(keep.fontFamily)el.style.fontFamily=keep.fontFamily;if(keep.fontSize)el.style.fontSize=keep.fontSize;if(keep.lineHeight)el.style.lineHeight=keep.lineHeight;
     })
   };clean(t.content);return t.innerHTML;
 }
@@ -100,12 +102,25 @@ function snapshotNotes(){state.notes=state.notes||{ET4012:'',MA4026:''};state.no
 function commitNotesSave(){clearTimeout(notesSaveTimer);notesSaveTimer=null;snapshotNotes();save();const s=$('notesSaveStatus');s.textContent='Autosparat '+new Date().toLocaleTimeString('sv-SE',{hour:'2-digit',minute:'2-digit'});s.classList.add('saved')}
 function queueNotesSave(){snapshotNotes();const s=$('notesSaveStatus');s.textContent='Sparar…';s.classList.remove('saved');clearTimeout(notesSaveTimer);notesSaveTimer=setTimeout(commitNotesSave,650)}
 function replaceSizeFonts(editor,px){editor.querySelectorAll('font[size="7"]').forEach(f=>{const s=document.createElement('span');s.style.fontSize=px+'px';while(f.firstChild)s.appendChild(f.firstChild);f.replaceWith(s)})}
+function closestNoteBlock(node,editor){if(node&&node.nodeType===Node.TEXT_NODE)node=node.parentElement;while(node&&node!==editor&&!noteBlockTags.has(node.tagName))node=node.parentElement;return node&&node!==editor?node:null}
+function applyNoteLineHeight(course,value){
+  const editor=noteEditor(course),range=noteRanges[course];if(!editor)return;
+  const blocks=new Set();
+  if(range){
+    const start=closestNoteBlock(range.startContainer,editor),end=closestNoteBlock(range.endContainer,editor);if(start)blocks.add(start);if(end)blocks.add(end);
+    const walker=document.createTreeWalker(editor,NodeFilter.SHOW_ELEMENT,{acceptNode:n=>noteBlockTags.has(n.tagName)&&range.intersectsNode(n)?NodeFilter.FILTER_ACCEPT:NodeFilter.FILTER_SKIP});let n;while((n=walker.nextNode()))blocks.add(n);
+  }
+  if(!blocks.size){const sel=getSelection();if(sel&&sel.rangeCount){const b=closestNoteBlock(sel.getRangeAt(0).startContainer,editor);if(b)blocks.add(b)}}
+  if(!blocks.size){document.execCommand('formatBlock',false,'p');const sel=getSelection();if(sel&&sel.rangeCount){const b=closestNoteBlock(sel.getRangeAt(0).startContainer,editor);if(b)blocks.add(b)}}
+  blocks.forEach(b=>b.style.lineHeight=String(value||1.5));
+}
 function applyNoteCommand(course,action,value){const e=noteEditor(course);restoreNoteSelection(course);try{document.execCommand('styleWithCSS',false,true)}catch(_){}
   if(action==='bold'||action==='italic'||action==='underline')document.execCommand(action,false,null);
   else if(action==='format')document.execCommand('formatBlock',false,value||'p');
   else if(action==='font')document.execCommand('fontName',false,value||'system-ui');
   else if(action==='color')document.execCommand('foreColor',false,value||'#111827');
   else if(action==='size'){try{document.execCommand('styleWithCSS',false,false)}catch(_){}document.execCommand('fontSize',false,'7');replaceSizeFonts(e,value||16)}
+  else if(action==='lineheight')applyNoteLineHeight(course,value||1.5);
   else if(action==='ul')document.execCommand('insertUnorderedList',false,null);
   else if(action==='ol')document.execCommand('insertOrderedList',false,null);
   rememberNoteSelection(course);queueNotesSave();
