@@ -50,6 +50,9 @@ jobs:
           gzip -t /tmp/studieplan-v4.patch.gz
           gzip -dc /tmp/studieplan-v4.patch.gz | patch -p1 -d _site
 
+          # Add the hidden two-course notes page.
+          python3 tools/apply_notes.py _site
+
           test -s _site/index.html
           test -s _site/app.js
           test -s _site/cloud-sync.js
@@ -64,6 +67,11 @@ jobs:
           grep -q 'tryAutoReconnect' _site/cloud-sync.js
           grep -q 'Studieplan status' _site/cloud-sync.js
           grep -q 'studieplan-shell-v2' _site/service-worker.js
+          grep -q 'id="notesPage"' _site/index.html
+          grep -q 'id="notesET4012"' _site/index.html
+          grep -q 'id="notesMA4026"' _site/index.html
+          grep -q 'function queueNotesSave()' _site/app.js
+          grep -q 'x.notes.ET4012' _site/app.js
 
           # Privacy guards: never publish embedded personal schedule/backup data.
           if grep -q 'study-001' _site/index.html; then
