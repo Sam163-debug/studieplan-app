@@ -56,6 +56,9 @@ jobs:
           # Replace the old line-height dropdown with Goodnotes-style spacing controls.
           python3 tools/apply_goodnotes_spacing.py _site
 
+          # Keep Redigera aktivitet open until Delete, Cancel, or Save is chosen.
+          python3 tools/apply_locked_edit_modal.py _site
+
           test -s _site/index.html
           test -s _site/app.js
           test -s _site/cloud-sync.js
@@ -79,6 +82,11 @@ jobs:
           grep -q 'data-spacing-auto' _site/index.html
           grep -q 'function initGoodnotesSpacing()' _site/app.js
           grep -q 'function applyGoodnotesSpacing' _site/app.js
+          grep -q "function closeEventModal(reason='other')" _site/app.js
+          grep -q "closeEventModal('cancel')" _site/app.js
+          grep -q "closeEventModal('save')" _site/app.js
+          grep -q "closeEventModal('delete')" _site/app.js
+          grep -q "closeEventModal('backdrop')" _site/app.js
 
           # Privacy guards: never publish embedded personal schedule/backup data.
           if grep -q 'study-001' _site/index.html; then
