@@ -59,6 +59,14 @@ jobs:
           # Keep Redigera aktivitet open until Delete, Cancel, or Save is chosen.
           python3 tools/apply_locked_edit_modal.py _site
 
+          # Add statistics, click-to-create, wider days, Dual mode, quick links and mobile View mode.
+          base64 --decode deploy/feature_pack.py.gz.b64 > /tmp/feature_pack.py.gz
+          echo "235cf62cc1ea628987e4a61040fae6afb7b57aa23416a407ec77dfa89f97129f  /tmp/feature_pack.py.gz" | sha256sum -c -
+          gzip -t /tmp/feature_pack.py.gz
+          gzip -dc /tmp/feature_pack.py.gz > /tmp/apply_feature_pack.py
+          echo "35e94a07c37d4efe3dd75ecee655b680336f28e64ca0fd3d812731debb0ab0fe  /tmp/apply_feature_pack.py" | sha256sum -c -
+          python3 /tmp/apply_feature_pack.py _site
+
           test -s _site/index.html
           test -s _site/app.js
           test -s _site/cloud-sync.js
@@ -67,7 +75,7 @@ jobs:
           node --check _site/cloud-sync.js
           node --check _site/service-worker.js
 
-          # Feature guards.
+          # Existing feature guards.
           grep -q 'eventLabelVersion=1' _site/cloud-sync.js
           grep -q 'ensureCategoryLabels' _site/cloud-sync.js
           grep -q 'tryAutoReconnect' _site/cloud-sync.js
@@ -87,6 +95,21 @@ jobs:
           grep -q "closeEventModal('save')" _site/app.js
           grep -q "closeEventModal('delete')" _site/app.js
           grep -q "closeEventModal('backdrop')" _site/app.js
+
+          # New feature guards.
+          grep -q 'id="statsPage"' _site/index.html
+          grep -q 'id="dualModeBtn"' _site/index.html
+          grep -q 'id="quickLinkBtn1"' _site/index.html
+          grep -q 'id="quickLinkBtn2"' _site/index.html
+          grep -q 'id="mobileViewPage"' _site/index.html
+          grep -q 'function renderCalendarEnhanced()' _site/app.js
+          grep -q 'function openAddAt' _site/app.js
+          grep -q 'function renderStats()' _site/app.js
+          grep -q 'Ej klart hittills' _site/app.js
+          grep -q 'const STUDIEPLAN_VIEW_MODE=' _site/app.js
+          grep -q 'async function syncViewFromDrive' _site/cloud-sync.js
+          grep -q "window.STUDIEPLAN_VIEW_MODE?'https://www.googleapis.com/auth/drive.appdata':GOOGLE_SCOPES" _site/cloud-sync.js
+          grep -q "View mode är read only och skriver inte till Google Drive" _site/cloud-sync.js
 
           # Privacy guards: never publish embedded personal schedule/backup data.
           if grep -q 'study-001' _site/index.html; then
