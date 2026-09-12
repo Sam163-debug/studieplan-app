@@ -67,7 +67,7 @@ jobs:
           echo "35e94a07c37d4efe3dd75ecee655b680336f28e64ca0fd3d812731debb0ab0fe  /tmp/apply_feature_pack.py" | sha256sum -c -
           python3 /tmp/apply_feature_pack.py _site
 
-          # Keep note heading sizes deterministic and mirror the selected text format in the toolbar.
+          # Keep note heading sizes deterministic, add Word-style text colors, and mirror selected formatting in the toolbar.
           python3 tools/apply_notes_editor_fix.py _site
 
           test -s _site/index.html
@@ -96,9 +96,15 @@ jobs:
           grep -q 'font-size:32px!important' _site/index.html
           grep -q 'font-size:28px!important' _site/index.html
           grep -q 'font-size:24px!important' _site/index.html
+          grep -q 'data-note-color-panel' _site/index.html
+          grep -q 'data-note-theme-colors' _site/index.html
+          grep -q 'data-note-standard-colors' _site/index.html
+          grep -q 'Fler färger' _site/index.html
+          grep -q 'function initWordNoteColors()' _site/app.js
+          grep -q 'function syncNoteColorUi' _site/app.js
           grep -q 'function syncNoteToolbar(course)' _site/app.js
           grep -q 'function initNoteToolbarSync()' _site/app.js
-          grep -q 'initNoteToolbarSync();' _site/app.js
+          grep -q 'initWordNoteColors();initNoteToolbarSync();' _site/app.js
           grep -q "function closeEventModal(reason='other')" _site/app.js
           grep -q "closeEventModal('cancel')" _site/app.js
           grep -q "closeEventModal('save')" _site/app.js
