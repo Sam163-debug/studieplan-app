@@ -67,6 +67,9 @@ jobs:
           echo "35e94a07c37d4efe3dd75ecee655b680336f28e64ca0fd3d812731debb0ab0fe  /tmp/apply_feature_pack.py" | sha256sum -c -
           python3 /tmp/apply_feature_pack.py _site
 
+          # Keep note heading sizes deterministic and mirror the selected text format in the toolbar.
+          python3 tools/apply_notes_editor_fix.py _site
+
           test -s _site/index.html
           test -s _site/app.js
           test -s _site/cloud-sync.js
@@ -90,6 +93,12 @@ jobs:
           grep -q 'data-spacing-auto' _site/index.html
           grep -q 'function initGoodnotesSpacing()' _site/app.js
           grep -q 'function applyGoodnotesSpacing' _site/app.js
+          grep -q 'font-size:32px!important' _site/index.html
+          grep -q 'font-size:28px!important' _site/index.html
+          grep -q 'font-size:24px!important' _site/index.html
+          grep -q 'function syncNoteToolbar(course)' _site/app.js
+          grep -q 'function initNoteToolbarSync()' _site/app.js
+          grep -q 'initNoteToolbarSync();' _site/app.js
           grep -q "function closeEventModal(reason='other')" _site/app.js
           grep -q "closeEventModal('cancel')" _site/app.js
           grep -q "closeEventModal('save')" _site/app.js
