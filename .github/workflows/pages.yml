@@ -70,8 +70,8 @@ jobs:
           # Keep note heading sizes deterministic, add Word-style text colors, and mirror selected formatting in the toolbar.
           python3 tools/apply_notes_editor_fix.py _site
 
-          # Temporary diagnostic: print Google sync/auth code context to Actions logs.
-          python3 tools/inspect_google_sync.py _site
+          # Pin Google sync to one browser-local account and require a user click for OAuth.
+          python3 tools/apply_google_account_lock.py _site
 
           test -s _site/index.html
           test -s _site/app.js
@@ -85,6 +85,20 @@ jobs:
           grep -q 'eventLabelVersion=1' _site/cloud-sync.js
           grep -q 'ensureCategoryLabels' _site/cloud-sync.js
           grep -q 'tryAutoReconnect' _site/cloud-sync.js
+          grep -q "GOOGLE_SYNC_ACCOUNT_KEY='studieplan-google-sync-account'" _site/cloud-sync.js
+          grep -q "openid email" _site/cloud-sync.js
+          grep -q "login_hint" _site/cloud-sync.js
+          grep -q "account_mismatch" _site/cloud-sync.js
+          grep -q "Automatisk inloggnings-popup är avstängd" _site/cloud-sync.js
+          grep -q "function renderSyncAccountControl()" _site/cloud-sync.js
+          if grep -q "requestAccessToken(false,'none')" _site/cloud-sync.js; then
+            echo 'Unsafe automatic OAuth popup path detected' >&2
+            exit 1
+          fi
+          if grep -q "setTimeout(tryAutoReconnect" _site/cloud-sync.js; then
+            echo 'Startup auto-reconnect popup path detected' >&2
+            exit 1
+          fi
           grep -q 'Studieplan status' _site/cloud-sync.js
           grep -q 'studieplan-shell-v2' _site/service-worker.js
           grep -q 'id="notesPage"' _site/index.html
