@@ -70,6 +70,9 @@ jobs:
           # Keep note heading sizes deterministic, add Word-style text colors, and mirror selected formatting in the toolbar.
           python3 tools/apply_notes_editor_fix.py _site
 
+          # Temporary diagnostic: print Google sync/auth code context to Actions logs.
+          python3 tools/inspect_google_sync.py _site
+
           test -s _site/index.html
           test -s _site/app.js
           test -s _site/cloud-sync.js
