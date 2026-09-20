@@ -6,7 +6,7 @@ app = root / 'app.js'
 js = app.read_text(encoding='utf-8')
 
 old_close = "function closeEventModal(){$('eventModalBack').classList.add('hidden')}"
-new_close = "function closeEventModal(reason='other'){if(editingId&& !['delete','cancel','save'].includes(reason))return false;$('eventModalBack').classList.add('hidden');return true}"
+new_close = "function closeEventModal(reason='other'){const allowed=editingId?['delete','cancel','save']:['cancel','save'];if(!allowed.includes(reason))return false;$('eventModalBack').classList.add('hidden');return true}"
 if old_close not in js:
     raise SystemExit('closeEventModal anchor not found')
 js = js.replace(old_close, new_close, 1)
@@ -29,9 +29,9 @@ if old_handlers not in js:
     raise SystemExit('modal handler anchor not found')
 js = js.replace(old_handlers, new_handlers, 1)
 
-escape_guard = "document.addEventListener('keydown',e=>{if(e.key==='Escape'&&editingId&&!$('eventModalBack').classList.contains('hidden')){e.preventDefault();e.stopImmediatePropagation()}},true);"
+escape_guard = "document.addEventListener('keydown',e=>{if(e.key==='Escape'&&!$('eventModalBack').classList.contains('hidden')){e.preventDefault();e.stopImmediatePropagation()}},true);"
 if escape_guard not in js:
     js += "\n" + escape_guard + "\n"
 
 app.write_text(js, encoding='utf-8')
-print('Locked edit modal applied')
+print('Locked add/edit modal applied')
