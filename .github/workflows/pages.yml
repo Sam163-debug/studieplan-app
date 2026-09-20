@@ -73,10 +73,15 @@ jobs:
           # Pin Google sync to one browser-local account and require a user click for OAuth.
           python3 tools/apply_google_account_lock.py _site
 
+          # Add the mechatronics app icon/favicon.
+          python3 tools/apply_app_icon.py _site
+
           test -s _site/index.html
           test -s _site/app.js
           test -s _site/cloud-sync.js
           test -s _site/service-worker.js
+          test -s _site/favicon.png
+          grep -q 'rel="icon"' _site/index.html
           node --check _site/app.js
           node --check _site/cloud-sync.js
           node --check _site/service-worker.js
