@@ -10,12 +10,12 @@ for name in ('favicon.png','app-icon-192.png'):
 
 p=root/'index.html'
 html=p.read_text(encoding='utf-8')
-for old in ('favicon.png?v=1','favicon.png?v=2','app-icon-192.png?v=2'):
+for old in ('favicon.png?v=1','favicon.png?v=3','app-icon-192.png?v=2'):
     html=html.replace(old,'__ICON_PLACEHOLDER__')
 # Remove previous generated icon links before inserting the new set.
 import re
 html=re.sub(r'<link rel="(?:icon|shortcut icon|apple-touch-icon)"[^>]*>\n?','',html)
-links='<link rel="icon" type="image/png" sizes="32x32" href="favicon.png?v=2">\n<link rel="shortcut icon" href="favicon.png?v=2">\n<link rel="apple-touch-icon" sizes="192x192" href="app-icon-192.png?v=2">\n'
+links='<link rel="icon" type="image/png" sizes="32x32" href="favicon.png?v=3">\n<link rel="shortcut icon" href="favicon.png?v=3">\n<link rel="apple-touch-icon" sizes="192x192" href="app-icon-192.png?v=2">\n'
 marker='<title>Studieplan</title>\n'
 if marker not in html:
     raise SystemExit('title anchor missing')
