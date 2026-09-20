@@ -138,10 +138,12 @@ jobs:
           grep -q 'function initNoteToolbarSync()' _site/app.js
           grep -q 'initWordNoteColors();initNoteToolbarSync();' _site/app.js
           grep -q "function closeEventModal(reason='other')" _site/app.js
+          grep -Fq "const allowed=editingId?['delete','cancel','save']:['cancel','save']" _site/app.js
           grep -q "closeEventModal('cancel')" _site/app.js
           grep -q "closeEventModal('save')" _site/app.js
           grep -q "closeEventModal('delete')" _site/app.js
           grep -q "closeEventModal('backdrop')" _site/app.js
+          grep -Fq "e.key==='Escape'&&!$('eventModalBack').classList.contains('hidden')" _site/app.js
 
           # New feature guards.
           grep -q 'id="statsPage"' _site/index.html
