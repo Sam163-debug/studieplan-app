@@ -81,6 +81,9 @@ jobs:
           test -s _site/cloud-sync.js
           test -s _site/service-worker.js
           test -s _site/favicon.png
+          test -s _site/app-icon-192.png
+          grep -q 'favicon.png?v=2' _site/index.html
+          grep -q 'app-icon-192.png?v=2' _site/index.html
           grep -q 'rel="icon"' _site/index.html
           node --check _site/app.js
           node --check _site/cloud-sync.js
