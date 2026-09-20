@@ -76,6 +76,9 @@ jobs:
           # Add the mechatronics app icon/favicon.
           python3 tools/apply_app_icon.py _site
 
+          # Apply the mechatronics-inspired visual theme last; note content formatting remains untouched.
+          python3 tools/apply_mechatronics_theme.py _site
+
           test -s _site/index.html
           test -s _site/app.js
           test -s _site/cloud-sync.js
@@ -85,6 +88,10 @@ jobs:
           grep -q 'favicon.png?v=3' _site/index.html
           grep -q 'app-icon-192.png?v=2' _site/index.html
           grep -q 'rel="icon"' _site/index.html
+          grep -q 'Mechatronics UI theme' _site/index.html
+          grep -q -- '--mech-cyan:#22c7df' _site/index.html
+          grep -q '.notes-editor{' _site/index.html
+          grep -q 'background:#fff;' _site/index.html
           node --check _site/app.js
           node --check _site/cloud-sync.js
           node --check _site/service-worker.js
