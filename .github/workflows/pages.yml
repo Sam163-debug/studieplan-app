@@ -79,6 +79,9 @@ jobs:
           # Apply the mechatronics-inspired visual theme last; note content formatting remains untouched.
           python3 tools/apply_mechatronics_theme.py _site
 
+          # Temporary diagnostic for course-name lock removal.
+          python3 tools/inspect_course_lock.py _site
+
           test -s _site/index.html
           test -s _site/app.js
           test -s _site/cloud-sync.js
