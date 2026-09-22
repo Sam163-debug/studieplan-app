@@ -79,8 +79,8 @@ jobs:
           # Apply the mechatronics-inspired visual theme last; note content formatting remains untouched.
           python3 tools/apply_mechatronics_theme.py _site
 
-          # Temporary diagnostic for course-name lock removal.
-          python3 tools/inspect_course_lock.py _site
+          # Allow renaming built-in course/type names without changing their stable IDs.
+          python3 tools/apply_unlock_course_names.py _site
 
           test -s _site/index.html
           test -s _site/app.js
@@ -158,6 +158,9 @@ jobs:
           grep -q 'function renderCalendarEnhanced()' _site/app.js
           grep -q 'function openAddAt' _site/app.js
           grep -q 'function renderStats()' _site/app.js
+          grep -q 'function unlockAllCourseNameInputs()' _site/app.js
+          grep -q "input.readOnly=false" _site/app.js
+          grep -q "input.disabled=false" _site/app.js
           grep -q 'Ej klart hittills' _site/app.js
           grep -q 'const STUDIEPLAN_VIEW_MODE=' _site/app.js
           grep -q 'async function syncViewFromDrive' _site/cloud-sync.js
