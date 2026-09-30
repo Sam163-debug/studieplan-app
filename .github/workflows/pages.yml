@@ -82,6 +82,9 @@ jobs:
           # Allow renaming built-in course/type names without changing their stable IDs.
           python3 tools/apply_unlock_course_names.py _site
 
+          # Add collapsible sidebar, four-step app undo, a third notes editor and remove explanatory clutter.
+          python3 tools/apply_productivity_ui.py _site
+
           test -s _site/index.html
           test -s _site/app.js
           test -s _site/cloud-sync.js
@@ -118,10 +121,12 @@ jobs:
             exit 1
           fi
           grep -q 'Studieplan status' _site/cloud-sync.js
-          grep -q 'studieplan-shell-v2' _site/service-worker.js
+          grep -q 'studieplan-shell-v3' _site/service-worker.js
           grep -q 'id="notesPage"' _site/index.html
           grep -q 'id="notesET4012"' _site/index.html
           grep -q 'id="notesMA4026"' _site/index.html
+          grep -q 'id="notesTODO"' _site/index.html
+          grep -q 'toDo-List &amp; kom ihåg' _site/index.html
           grep -q 'function queueNotesSave()' _site/app.js
           grep -q 'x.notes.ET4012' _site/app.js
           grep -q 'data-spacing-range' _site/index.html
@@ -148,6 +153,17 @@ jobs:
           grep -q "closeEventModal('backdrop')" _site/app.js
           grep -Fq "e.key==='Escape'" _site/app.js
           grep -Fq "stopImmediatePropagation()" _site/app.js
+
+          # Productivity/UI guards.
+          grep -q 'id="sidebarToggleBtn"' _site/index.html
+          grep -q 'id="appUndoBtn"' _site/index.html
+          grep -q 'body.sidebar-collapsed main' _site/index.html
+          grep -q 'const APP_UNDO_LIMIT=4' _site/app.js
+          grep -q 'function performAppUndo()' _site/app.js
+          grep -q 'function initSidebarCollapse()' _site/app.js
+          grep -q "['ET4012','MA4026','TODO'].forEach" _site/app.js
+          grep -q "state.notes.TODO" _site/app.js
+          grep -q '.notes-card.todo' _site/index.html
 
           # New feature guards.
           grep -q 'id="statsPage"' _site/index.html
