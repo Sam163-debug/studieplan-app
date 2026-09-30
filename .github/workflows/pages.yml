@@ -161,7 +161,7 @@ jobs:
           grep -q 'const APP_UNDO_LIMIT=4' _site/app.js
           grep -q 'function performAppUndo()' _site/app.js
           grep -q 'function initSidebarCollapse()' _site/app.js
-          grep -q "['ET4012','MA4026','TODO'].forEach" _site/app.js
+          grep -Fq "['ET4012','MA4026','TODO'].forEach" _site/app.js
           grep -q "state.notes.TODO" _site/app.js
           grep -q '.notes-card.todo' _site/index.html
 
