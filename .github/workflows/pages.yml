@@ -85,6 +85,9 @@ jobs:
           # Add collapsible sidebar, four-step app undo, a third notes editor and remove explanatory clutter.
           python3 tools/apply_productivity_ui.py _site
 
+          # Add Word-like note font sizing with A-/A+ and direct numeric entry.
+          python3 tools/apply_word_font_size.py _site
+
           test -s _site/index.html
           test -s _site/app.js
           test -s _site/cloud-sync.js
@@ -121,7 +124,7 @@ jobs:
             exit 1
           fi
           grep -q 'Studieplan status' _site/cloud-sync.js
-          grep -q 'studieplan-shell-v3' _site/service-worker.js
+          grep -q 'studieplan-shell-v4' _site/service-worker.js
           grep -q 'id="notesPage"' _site/index.html
           grep -q 'id="notesET4012"' _site/index.html
           grep -q 'id="notesMA4026"' _site/index.html
@@ -164,6 +167,12 @@ jobs:
           grep -Fq "['ET4012','MA4026','TODO'].forEach" _site/app.js
           grep -q "state.notes.TODO" _site/app.js
           grep -q '.notes-card.todo' _site/index.html
+          grep -q 'data-note-size-step="-1"' _site/index.html
+          grep -q 'data-note-size-step="1"' _site/index.html
+          grep -q 'data-note-size-value' _site/index.html
+          grep -q 'function applyWordNoteFontSize' _site/app.js
+          grep -q 'function initWordNoteFontSize()' _site/app.js
+          grep -q 'const NOTE_FONT_SIZES=' _site/app.js
 
           # New feature guards.
           grep -q 'id="statsPage"' _site/index.html
