@@ -15,7 +15,6 @@ old_size_re=r'<select data-note-action="size" aria-label="Textstorlek">.*?</sele
 word_size='''<div class="notes-size-control" data-note-size-control>
             <button type="button" class="notes-size-step notes-size-down" data-note-size-step="-1" title="Minska textstorlek" aria-label="Minska textstorlek">A−</button>
             <input type="number" class="notes-size-value" data-note-size-value min="8" max="96" step="1" value="16" inputmode="numeric" aria-label="Textstorlek i pixlar" title="Textstorlek">
-            <span class="notes-size-unit">px</span>
             <button type="button" class="notes-size-step notes-size-up" data-note-size-step="1" title="Öka textstorlek" aria-label="Öka textstorlek">A+</button>
           </div>'''
 html,count=re.subn(old_size_re,word_size,html,flags=re.S)
@@ -30,14 +29,37 @@ if old_head not in html:
 html=html.replace(old_head,new_head,1)
 
 size_css=r'''
-/* Word-like font size control */
-.notes-size-control{display:inline-flex;align-items:center;height:32px;border:1px solid #91afc0;border-radius:7px;overflow:hidden;background:#d8e6ee}
-.notes-size-control:focus-within{border-color:#4fa5c1;box-shadow:0 0 0 2px rgba(34,199,223,.14)}
-.notes-size-control .notes-size-step{height:30px!important;min-width:34px!important;padding:0 7px!important;border:0!important;border-radius:0!important;background:transparent!important;font-weight:700!important}
-.notes-size-control .notes-size-step:hover{background:#c4d9e5!important}
-.notes-size-value{width:47px!important;height:30px!important;padding:0 3px!important;border:0!important;border-left:1px solid #a9c0ce!important;border-right:1px solid #a9c0ce!important;border-radius:0!important;background:#e5eef3!important;text-align:right;font-variant-numeric:tabular-nums;-moz-appearance:textfield}
-.notes-size-value::-webkit-inner-spin-button,.notes-size-value::-webkit-outer-spin-button{-webkit-appearance:none;margin:0}
-.notes-size-unit{font-size:10px;color:#5d7689;margin-left:-20px;margin-right:5px;pointer-events:none}
+/* Word-like font size control: three non-overlapping fixed-width segments. */
+.notes-toolbar .notes-size-control{
+  box-sizing:border-box;display:inline-grid;grid-template-columns:38px 54px 38px;
+  align-items:stretch;flex:0 0 130px;width:130px;min-width:130px;
+  height:34px;margin:0;border:1px solid #91afc0;border-radius:8px;
+  overflow:hidden;background:#d5e5ee;vertical-align:middle;
+}
+.notes-toolbar .notes-size-control:focus-within{border-color:#4fa5c1;box-shadow:0 0 0 2px rgba(34,199,223,.16)}
+.notes-toolbar .notes-size-control button.notes-size-step{
+  box-sizing:border-box!important;display:grid!important;place-items:center!important;
+  width:38px!important;min-width:38px!important;max-width:38px!important;
+  height:32px!important;min-height:32px!important;margin:0!important;padding:0!important;
+  border:0!important;border-radius:0!important;background:#c9dce8!important;
+  color:#18364f!important;font-size:14px!important;font-weight:700!important;
+  line-height:1!important;box-shadow:none!important;
+}
+.notes-toolbar .notes-size-control button.notes-size-step:hover{background:#afd0e1!important}
+.notes-toolbar .notes-size-control input.notes-size-value{
+  box-sizing:border-box!important;display:block!important;
+  width:54px!important;min-width:54px!important;max-width:54px!important;
+  height:32px!important;min-height:32px!important;margin:0!important;
+  padding:0 3px!important;border:0!important;border-left:1px solid #a5bbc8!important;
+  border-right:1px solid #a5bbc8!important;border-radius:0!important;
+  background:#e6f0f5!important;color:#173047!important;font-size:14px!important;
+  font-weight:600!important;line-height:32px!important;text-align:center!important;
+  font-variant-numeric:tabular-nums;box-shadow:none!important;outline:0!important;
+  appearance:textfield!important;-moz-appearance:textfield!important;
+}
+.notes-toolbar .notes-size-control input.notes-size-value::-webkit-inner-spin-button,
+.notes-toolbar .notes-size-control input.notes-size-value::-webkit-outer-spin-button{-webkit-appearance:none;margin:0}
+.notes-toolbar .notes-size-control input.notes-size-value:focus{background:#f0f6f9!important}
 '''.strip()
 if '/* Word-like font size control */' not in html:
     html=html.replace('</style>',size_css+'\n</style>',1)
@@ -49,8 +71,17 @@ function clampNoteFontSize(value){
   value=Math.round(Number(value)||16);return Math.max(8,Math.min(96,value));
 }
 function currentNoteFontSize(course){
-  const editor=noteEditor(course),node=noteSelectionElement(course);
-  if(!editor||!node)return 16;
+  const editor=noteEditor(course),sel=getSelection();
+  if(!editor)return 16;
+  const active=sel&&sel.rangeCount&&editor.contains(sel.getRangeAt(0).commonAncestorContainer)
+    ?sel.getRangeAt(0):noteRanges[course];
+  let node=active&&active.startContainer;
+  if(node&&node.nodeType===Node.ELEMENT_NODE&&node.childNodes.length){
+    node=node.childNodes[Math.min(active.startOffset,node.childNodes.length-1)]||node;
+    while(node&&node.firstChild)node=node.firstChild;
+  }
+  if(node&&node.nodeType===Node.TEXT_NODE)node=node.parentElement;
+  if(!node||!editor.contains(node))node=editor;
   return clampNoteFontSize(parseFloat(getComputedStyle(node).fontSize)||16);
 }
 function setNoteSizeUi(course,value){
@@ -63,25 +94,68 @@ function normalizePendingNoteFont(editor,px){
   editor.querySelectorAll('font[size="7"]').forEach(f=>{
     const span=document.createElement('span');
     span.style.fontSize=clampNoteFontSize(px)+'px';
-    span.style.setProperty('--note-inline-size',clampNoteFontSize(px)+'px');
     while(f.firstChild)span.appendChild(f.firstChild);
     f.replaceWith(span);
   });
+}
+// Save logical text offsets, not DOM nodes: execCommand replaces inline nodes.
+function noteTextBoundaryOffset(editor,container,offset){
+  const r=document.createRange();
+  r.selectNodeContents(editor);r.setEnd(container,offset);
+  return r.cloneContents().textContent.length;
+}
+function noteSelectionOffsets(editor,range){
+  if(!range||range.collapsed||!editor.contains(range.commonAncestorContainer))return null;
+  return {
+    start:noteTextBoundaryOffset(editor,range.startContainer,range.startOffset),
+    end:noteTextBoundaryOffset(editor,range.endContainer,range.endOffset)
+  };
+}
+function notePointAtTextOffset(editor,offset){
+  let rest=Math.max(0,offset),last=null;
+  const walker=document.createTreeWalker(editor,NodeFilter.SHOW_TEXT);
+  let node;
+  while((node=walker.nextNode())){
+    last=node;
+    if(rest<=node.length)return {node,offset:rest};
+    rest-=node.length;
+  }
+  return last?{node:last,offset:last.length}:{node:editor,offset:0};
+}
+function restoreNoteTextSelection(course,positions){
+  const editor=noteEditor(course);
+  if(!editor||!positions)return false;
+  const start=notePointAtTextOffset(editor,positions.start);
+  const end=notePointAtTextOffset(editor,positions.end);
+  const range=document.createRange();
+  try{
+    range.setStart(start.node,start.offset);
+    range.setEnd(end.node,end.offset);
+    const sel=getSelection();sel.removeAllRanges();sel.addRange(range);
+    noteRanges[course]=range.cloneRange();
+    return !range.collapsed;
+  }catch(_){return false}
 }
 function applyWordNoteFontSize(course,value){
   const editor=noteEditor(course),px=clampNoteFontSize(value);if(!editor)return;
   restoreNoteSelection(course);
   const sel=getSelection(),range=sel&&sel.rangeCount?sel.getRangeAt(0):null;
+  const positions=noteSelectionOffsets(editor,range);
   try{document.execCommand('styleWithCSS',false,false)}catch(_){}
-  document.execCommand('fontSize',false,'7');
-  pendingNoteFontSize[course]=px;
-  if(range&&!range.collapsed){
+  const applied=document.execCommand('fontSize',false,'7');
+  if(positions){
+    // Apply to the newly formatted inline elements; retain the original marked word.
     normalizePendingNoteFont(editor,px);
     pendingNoteFontSize[course]=null;
+    restoreNoteTextSelection(course,positions);
+  }else if(applied){
+    pendingNoteFontSize[course]=px;
+    rememberNoteSelection(course);
   }
-  rememberNoteSelection(course);
   setNoteSizeUi(course,px);
   queueNotesSave();
+  // Keep both the actual browser selection and our saved selection for the next A+/A- click.
+  if(positions)restoreNoteTextSelection(course,positions);
   setTimeout(()=>syncNoteToolbar(course),0);
 }
 function nextWordNoteFontSize(current,direction){
