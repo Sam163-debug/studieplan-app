@@ -88,6 +88,9 @@ jobs:
           # Add Word-like note font sizing with A-/A+ and direct numeric entry.
           python3 tools/apply_word_font_size.py _site
 
+          # Stabilize note selection, formatting and paragraph spacing.
+          python3 tools/apply_notes_editor_stability.py _site
+
           test -s _site/index.html
           test -s _site/app.js
           test -s _site/cloud-sync.js
@@ -124,7 +127,7 @@ jobs:
             exit 1
           fi
           grep -q 'Studieplan status' _site/cloud-sync.js
-          grep -q 'studieplan-shell-v4' _site/service-worker.js
+          grep -q 'studieplan-shell-v5' _site/service-worker.js
           grep -q 'id="notesPage"' _site/index.html
           grep -q 'id="notesET4012"' _site/index.html
           grep -q 'id="notesMA4026"' _site/index.html
@@ -156,6 +159,11 @@ jobs:
           grep -q "closeEventModal('backdrop')" _site/app.js
           grep -Fq "e.key==='Escape'" _site/app.js
           grep -Fq "stopImmediatePropagation()" _site/app.js
+
+          # Editor stability guards.
+          grep -q 'function applyNoteFontToSelectedText' _site/app.js
+          grep -q 'marginBottom:el.style.marginBottom' _site/app.js
+          grep -q 'Avstånd efter raden' _site/index.html
 
           # Productivity/UI guards.
           grep -q 'id="sidebarToggleBtn"' _site/index.html
