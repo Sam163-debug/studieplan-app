@@ -93,6 +93,7 @@ jobs:
 
           # Open at today's week and provide a local calendar-description display switch.
           python3 tools/apply_calendar_week_description.py _site
+          python3 tools/inspect_event_description.py _site
 
           test -s _site/index.html
           test -s _site/app.js
