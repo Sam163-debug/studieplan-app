@@ -88,6 +88,8 @@ renderCalendarEnhanced=function(){
   originalEnhancedCalendarRender();
   fitCalendarEventDescriptions();
 };
+fitCalendarEventDescriptions();
+window.addEventListener('resize',fitCalendarEventDescriptions);
 """
 # Existing render() resolves renderCalendarEnhanced dynamically, so wrapper is safe.
 if 'studieplan-shell-v6' not in sw:raise SystemExit('SW cache anchor missing')
