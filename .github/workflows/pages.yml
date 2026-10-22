@@ -90,6 +90,7 @@ jobs:
 
           # Stabilize note selection, formatting and paragraph spacing.
           python3 tools/apply_notes_editor_stability.py _site
+          python3 tools/inspect_calendar_render.py _site
 
           test -s _site/index.html
           test -s _site/app.js
