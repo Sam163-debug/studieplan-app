@@ -90,7 +90,9 @@ jobs:
 
           # Stabilize note selection, formatting and paragraph spacing.
           python3 tools/apply_notes_editor_stability.py _site
-          python3 tools/inspect_calendar_render.py _site
+
+          # Open at today's week and provide a local calendar-description display switch.
+          python3 tools/apply_calendar_week_description.py _site
 
           test -s _site/index.html
           test -s _site/app.js
@@ -128,7 +130,7 @@ jobs:
             exit 1
           fi
           grep -q 'Studieplan status' _site/cloud-sync.js
-          grep -q 'studieplan-shell-v5' _site/service-worker.js
+          grep -q 'studieplan-shell-v6' _site/service-worker.js
           grep -q 'id="notesPage"' _site/index.html
           grep -q 'id="notesET4012"' _site/index.html
           grep -q 'id="notesMA4026"' _site/index.html
@@ -165,6 +167,12 @@ jobs:
           grep -q 'function applyNoteFontToSelectedText' _site/app.js
           grep -q 'marginBottom:el.style.marginBottom' _site/app.js
           grep -q 'Avstånd efter raden' _site/index.html
+
+          # Calendar week and description visibility guards.
+          grep -Fq 'currentMonday=mondayOf(new Date())' _site/app.js
+          grep -q 'id="showCalendarDescriptions"' _site/index.html
+          grep -q 'calendar-event-description' _site/app.js
+          grep -q 'CALENDAR_DESCRIPTION_PREF' _site/app.js
 
           # Productivity/UI guards.
           grep -q 'id="sidebarToggleBtn"' _site/index.html
