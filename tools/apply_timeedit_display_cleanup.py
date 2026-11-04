@@ -89,8 +89,8 @@ old_style=r'''function styleFor(e){const base=validHex(category(e.categoryId).co
 new_style=r'''function teVisualCourseColor(e){
   const cat=category(e.categoryId);
   const key=[e.categoryId||'',cat.name||'',e.course||'',e.title||''].join(' ').toLocaleLowerCase('sv-SE');
-  if(/datorsystemteknik|datorsystem/.test(key))return '#f197c4';
-  if(/elektronik/.test(key))return '#88b647';
+  if(/datorsystemteknik|datorsystem/.test(key))return '#fbb7d9';
+  if(/elektronik/.test(key))return '#bbe77e';
   return validHex(cat.color);
 }
 function styleFor(e){
@@ -131,7 +131,7 @@ teMarkCalendarEvents();
 '''
 
 if 'studieplan-shell-v8' not in sw:raise SystemExit('Missing cache version 8')
-sw=sw.replace('studieplan-shell-v8','studieplan-shell-v12')
+sw=sw.replace('studieplan-shell-v8','studieplan-shell-v13')
 for guard in ('teNormalizeImportedEvent','teCleanTimeEditTitle',
               'teMarkCalendarEvents','te-source-marker','id="fShowDescription"'):
     if guard not in html+js:raise SystemExit('Missing feature guard '+guard)
