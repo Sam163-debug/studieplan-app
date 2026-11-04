@@ -99,7 +99,7 @@ function styleFor(e){
   if(e.origin==='timeedit'){
     bg='repeating-linear-gradient(135deg, rgba(0,0,0,.065) 0 13px, rgba(255,255,255,.018) 13px 30px), linear-gradient('+base+','+base+')';
   }else if(e.origin==='gym'){
-    bg=\`radial-gradient(circle at 4px 4px,\${rgba(base,.38)} 0 2px,\${rgba(base,.10)} 2.5px 100%)\`;
+    bg=`radial-gradient(circle at 4px 4px,${rgba(base,.38)} 0 2px,${rgba(base,.10)} 2.5px 100%)`;
   }
   return {borderColor:base,background:bg,color:'#1f2937'};
 }'''
