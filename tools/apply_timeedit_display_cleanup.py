@@ -49,16 +49,9 @@ if 'timeeditOpenImport' in html or 'timeeditConfirmImport' in html:
 # Preserve each category's original block color. Replace only the diagonal
 # texture with wider, very low contrast stripes. No white label backgrounds.
 css=r'''
-/* TimeEdit: the ENTIRE block uses the course color, with a subtle pattern. */
-.event.timeedit{
-  background:
-    repeating-linear-gradient(135deg,
-      rgba(10,45,48,.075) 0 13px,
-      rgba(255,255,255,.018) 13px 30px),
-    linear-gradient(var(--te-category-color,#88b647),var(--te-category-color,#88b647))
-    !important;
-  background-repeat:repeat;
-}
+/* The calendar renderer paints the FULL opaque course color.
+   Never override that inline background with a pale CSS gradient. */
+.event.timeedit{background-repeat:repeat}
 /* Keep all calendar text directly on the colored activity block. */
 .event.timeedit .te-source-marker{
   position:absolute;
@@ -88,10 +81,35 @@ html=html.replace('</style>',css+'</style>',1)
 # so the existing imported events are labeled even without an importer.
 # Pass the actual, user-editable course color into each imported block.
 # CSS must not replace a background image without restoring the color beneath it.
+# The old styleFor used translucent course colors inside its stripes; that
+# caused the background of each event to appear almost white/blue. Use the
+# chosen fully opaque course color as the lowest background layer, and overlay
+# just a faint diagonal pattern on top. Keep other origins' styles unchanged.
+old_style="function styleFor(e){const base=validHex(category(e.categoryId).color);let bg=rgba(base,.16);if(e.origin==='timeedit')bg=\`repeating-linear-gradient(135deg,\${rgba(base,.30)} 0,\${rgba(base,.30)} 7px,\${rgba(base,.08)} 7px,\${rgba(base,.08)} 14px)\`;else if(e.origin==='gym')bg=\`radial-gradient(circle at 4px 4px,\${rgba(base,.38)} 0 2px,\${rgba(base,.10)} 2.5px 100%)\`;return {borderColor:base,background:bg,color:'#1f2937'}}"
+new_style=r'''function teVisualCourseColor(e){
+  const cat=category(e.categoryId);
+  const key=[e.categoryId||'',cat.name||'',e.course||'',e.title||''].join(' ').toLocaleLowerCase('sv-SE');
+  if(/datorsystemteknik|datorsystem/.test(key))return '#f197c4';
+  if(/elektronik/.test(key))return '#88b647';
+  return validHex(cat.color);
+}
+function styleFor(e){
+  const base=e.origin==='timeedit'?teVisualCourseColor(e):validHex(category(e.categoryId).color);
+  let bg=rgba(base,.16);
+  if(e.origin==='timeedit'){
+    bg='repeating-linear-gradient(135deg, rgba(0,0,0,.065) 0 13px, rgba(255,255,255,.018) 13px 30px), linear-gradient('+base+','+base+')';
+  }else if(e.origin==='gym'){
+    bg=\`radial-gradient(circle at 4px 4px,\${rgba(base,.38)} 0 2px,\${rgba(base,.10)} 2.5px 100%)\`;
+  }
+  return {borderColor:base,background:bg,color:'#1f2937'};
+}'''
+if old_style not in js:raise SystemExit('TimeEdit styleFor original code not found')
+js=js.replace(old_style,new_style,1)
+
 render_anchor="el.className='event '+e.origin+' status-'+e.status;applyStyle(el,e);"
 if render_anchor not in js:raise SystemExit('Enhanced event render style anchor missing')
 js=js.replace(render_anchor,
-  render_anchor+"if(e.origin==='timeedit')el.style.setProperty('--te-category-color',validHex(category(e.categoryId).color));",
+  render_anchor+"if(e.origin==='timeedit')el.style.setProperty('--te-category-color',teVisualCourseColor(e));",
   1)
 
 js+=r'''
@@ -113,7 +131,7 @@ teMarkCalendarEvents();
 '''
 
 if 'studieplan-shell-v8' not in sw:raise SystemExit('Missing cache version 8')
-sw=sw.replace('studieplan-shell-v8','studieplan-shell-v11')
+sw=sw.replace('studieplan-shell-v8','studieplan-shell-v12')
 for guard in ('teNormalizeImportedEvent','teCleanTimeEditTitle',
               'teMarkCalendarEvents','te-source-marker','id="fShowDescription"'):
     if guard not in html+js:raise SystemExit('Missing feature guard '+guard)
