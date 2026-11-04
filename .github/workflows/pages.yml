@@ -126,7 +126,9 @@ jobs:
           if grep -q 'timeedit_ics_import.js' _site/index.html; then exit 1; fi
           test ! -e _site/timeedit_ics_import.js
           grep -q 'te-source-marker' _site/index.html
-          grep -q 'rgba(9,50,60,.075) 0 13px' _site/index.html
+          grep -q 'rgba(10,45,48,.075) 0 13px' _site/index.html
+          grep -q -- '--te-category-color' _site/index.html
+          grep -q "el.style.setProperty('--te-category-color'" _site/app.js
           grep -q 'opacity:.16' _site/index.html
           if grep -q 'background:rgba(238,248,245,.93)!important' _site/index.html; then exit 1; fi
           grep -q 'function teCleanTimeEditTitle' _site/app.js
@@ -152,7 +154,7 @@ jobs:
             exit 1
           fi
           grep -q 'Studieplan status' _site/cloud-sync.js
-          grep -q 'studieplan-shell-v10' _site/service-worker.js
+          grep -q 'studieplan-shell-v11' _site/service-worker.js
           grep -q 'id="notesPage"' _site/index.html
           grep -q 'id="notesET4012"' _site/index.html
           grep -q 'id="notesMA4026"' _site/index.html
