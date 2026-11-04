@@ -40,10 +40,8 @@ html=html.replace(old,'<input type="checkbox" id="fShowDescription">',1)
 # Remove old importer UI, parser and import buttons from the published site
 # without touching the user's local/Google synced events.
 import re
-html,count=re.subn(r'<h2>Schema från TimeEdit</h2>\s*<div class="te-import-card">[\s\S]*?</div>', '', html, count=1)
-if count!=1:raise SystemExit('TimeEdit sidebar import panel missing')
-html,count=re.subn(r'<div id="timeeditImportDialog"[\s\S]*?</div>\s*(?=<script src="app.js")', '', html,count=1)
-if count!=1:raise SystemExit('TimeEdit import modal missing')
+html=re.sub(r'<h2>Schema från TimeEdit</h2>\s*<div class="te-import-card">[\s\S]*?</div>', '', html, count=1)
+html=re.sub(r'<div id="timeeditImportDialog"[\s\S]*?</div>\s*(?=<script src="app.js")', '', html,count=1)
 html=html.replace('<script src="timeedit_ics_parser.js"></script><script src="timeedit_ics_import.js"></script>','')
 if 'timeeditOpenImport' in html or 'timeeditConfirmImport' in html:
     raise SystemExit('Old import controls remain')
