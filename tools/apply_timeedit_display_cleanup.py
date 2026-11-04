@@ -49,11 +49,14 @@ if 'timeeditOpenImport' in html or 'timeeditConfirmImport' in html:
 # Preserve each category's original block color. Replace only the diagonal
 # texture with wider, very low contrast stripes. No white label backgrounds.
 css=r'''
-/* TimeEdit: understated wide diagonal stripes, full legibility. */
+/* TimeEdit: the ENTIRE block uses the course color, with a subtle pattern. */
 .event.timeedit{
-  background-image:repeating-linear-gradient(135deg,
-    rgba(9,50,60,.075) 0 13px,
-    rgba(255,255,255,.025) 13px 30px) !important;
+  background:
+    repeating-linear-gradient(135deg,
+      rgba(10,45,48,.075) 0 13px,
+      rgba(255,255,255,.018) 13px 30px),
+    linear-gradient(var(--te-category-color,#88b647),var(--te-category-color,#88b647))
+    !important;
   background-repeat:repeat;
 }
 /* Keep all calendar text directly on the colored activity block. */
@@ -83,6 +86,14 @@ html=html.replace('</style>',css+'</style>',1)
 
 # The source marking previously lived in the import script; keep it permanent,
 # so the existing imported events are labeled even without an importer.
+# Pass the actual, user-editable course color into each imported block.
+# CSS must not replace a background image without restoring the color beneath it.
+render_anchor="el.className='event '+e.origin+' status-'+e.status;applyStyle(el,e);"
+if render_anchor not in js:raise SystemExit('Enhanced event render style anchor missing')
+js=js.replace(render_anchor,
+  render_anchor+"if(e.origin==='timeedit')el.style.setProperty('--te-category-color',validHex(category(e.categoryId).color));",
+  1)
+
 js+=r'''
 function teMarkCalendarEvents(){
   document.querySelectorAll('#calendar .event.timeedit').forEach(event=>{
@@ -102,11 +113,11 @@ teMarkCalendarEvents();
 '''
 
 if 'studieplan-shell-v8' not in sw:raise SystemExit('Missing cache version 8')
-sw=sw.replace('studieplan-shell-v8','studieplan-shell-v10')
+sw=sw.replace('studieplan-shell-v8','studieplan-shell-v11')
 for guard in ('teNormalizeImportedEvent','teCleanTimeEditTitle',
               'teMarkCalendarEvents','te-source-marker','id="fShowDescription"'):
     if guard not in html+js:raise SystemExit('Missing feature guard '+guard)
 hp.write_text(html,encoding='utf-8')
 ap.write_text(js,encoding='utf-8')
 sp.write_text(sw,encoding='utf-8')
-print('TimeEdit: subtle wide stripes and unobtrusive source label; importer removed')
+print('TimeEdit blocks use full category-color backgrounds with low-contrast stripes')
