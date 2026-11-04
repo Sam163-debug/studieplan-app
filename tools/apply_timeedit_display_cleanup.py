@@ -46,38 +46,38 @@ html=html.replace('<script src="timeedit_ics_parser.js"></script><script src="ti
 if 'timeeditOpenImport' in html or 'timeeditConfirmImport' in html:
     raise SystemExit('Old import controls remain')
 
-# Stronger stripes are drawn over the course background via a pseudo-element,
-# rather than replacing the user-selected avocado/rose/category colors.
+# Preserve each category's original block color. Replace only the diagonal
+# texture with wider, very low contrast stripes. No white label backgrounds.
 css=r'''
-/* Imported source: thicker stripes, readable labels, no importer controls. */
-.event.timeedit{isolation:isolate;position:absolute;overflow:hidden}
-.event.timeedit::before{
-  content:"";position:absolute;inset:0;z-index:0;pointer-events:none;
-  background:repeating-linear-gradient(135deg,
-    rgba(7,46,51,.18) 0 8px,
-    rgba(255,255,255,.09) 8px 18px);
+/* TimeEdit: understated wide diagonal stripes, full legibility. */
+.event.timeedit{
+  background-image:repeating-linear-gradient(135deg,
+    rgba(9,50,60,.075) 0 13px,
+    rgba(255,255,255,.025) 13px 30px) !important;
+  background-repeat:repeat;
 }
-.event.timeedit > *{position:relative;z-index:1}
-.event.timeedit > b,.event.timeedit > small,
-.event.timeedit > .calendar-event-description{
-  background:rgba(238,248,245,.93)!important;
-  color:#113149!important;
-  border-radius:3px;
-  padding:1px 3px;
-  text-shadow:none!important;
-  max-width:100%;
-  box-decoration-break:clone;
-  -webkit-box-decoration-break:clone;
-}
-.event.timeedit > b{font-weight:750}
-.event.timeedit > small{font-weight:650}
+/* Keep all calendar text directly on the colored activity block. */
 .event.timeedit .te-source-marker{
-  display:inline-block;position:relative;z-index:2;
-  background:#17455a;color:#fff;border:1px solid #eef8fb;
-  border-radius:3px;padding:1px 4px;margin-top:2px;
-  font-size:9px;font-weight:800;letter-spacing:.06em;line-height:1.1;
+  position:absolute;
+  right:4px;
+  bottom:3px;
+  z-index:2;
+  display:block;
+  background:transparent;
+  border:0;
+  border-radius:0;
+  box-shadow:none;
+  padding:0;
+  margin:0;
+  color:inherit;
+  font-size:8px;
+  font-weight:600;
+  letter-spacing:.025em;
+  line-height:1;
+  opacity:.16;
+  pointer-events:none;
 }
-'''
+'''.strip()
 if '</style>' not in html:raise SystemExit('Style tag missing')
 html=html.replace('</style>',css+'</style>',1)
 
@@ -102,11 +102,11 @@ teMarkCalendarEvents();
 '''
 
 if 'studieplan-shell-v8' not in sw:raise SystemExit('Missing cache version 8')
-sw=sw.replace('studieplan-shell-v8','studieplan-shell-v9')
+sw=sw.replace('studieplan-shell-v8','studieplan-shell-v10')
 for guard in ('teNormalizeImportedEvent','teCleanTimeEditTitle',
               'teMarkCalendarEvents','te-source-marker','id="fShowDescription"'):
     if guard not in html+js:raise SystemExit('Missing feature guard '+guard)
 hp.write_text(html,encoding='utf-8')
 ap.write_text(js,encoding='utf-8')
 sp.write_text(sw,encoding='utf-8')
-print('Removed importer; stronger stripes; opted-out descriptions; cleaned imported TimeEdit titles')
+print('TimeEdit: subtle wide stripes and unobtrusive source label; importer removed')
