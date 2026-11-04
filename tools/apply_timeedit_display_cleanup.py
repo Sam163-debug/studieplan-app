@@ -20,7 +20,7 @@ js=js.replace(
 )
 # Close the teNormalizeImportedEvent call after the normalization object.
 old="categoryId:e.categoryId||'OTHER',origin:e.origin||'custom'}));return x;"
-new="categoryId:e.categoryId||'OTHER',origin:e.origin||'custom'})));return x;"
+new="categoryId:e.categoryId||'OTHER',origin:e.origin||'custom'}));return x;"
 if old not in js:raise SystemExit('Event normalization anchor missing')
 js=js.replace(old,new,1)
 old="if(!raw)save();}catch(err){"
