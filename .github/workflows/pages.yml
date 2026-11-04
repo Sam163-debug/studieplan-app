@@ -100,6 +100,10 @@ jobs:
           # Add a second full-featured notes page for Elektronik and Datorsystemteknik I.
           python3 tools/apply_second_notes_page.py _site
 
+          # Add a safe in-browser TimeEdit ICS import (no personal schedule committed).
+          python3 tools/apply_timeedit_import_ui.py _site
+          node tools/test_timeedit_parser.cjs _site/timeedit_ics_parser.js
+
           test -s _site/index.html
           test -s _site/app.js
           test -s _site/cloud-sync.js
@@ -116,6 +120,17 @@ jobs:
           node --check _site/app.js
           node --check _site/cloud-sync.js
           node --check _site/service-worker.js
+          node --check _site/timeedit_ics_parser.js
+          node --check _site/timeedit_ics_import.js
+          test -s _site/timeedit_ics_parser.js
+          test -s _site/timeedit_ics_import.js
+
+          # TimeEdit import controls and source-tag guards.
+          grep -q 'id="timeeditOpenImport"' _site/index.html
+          grep -q 'id="timeeditImportDialog"' _site/index.html
+          grep -q 'id="timeeditFile"' _site/index.html
+          grep -q 'te-source-marker' _site/index.html
+          grep -q 'function teCommit' _site/timeedit_ics_import.js
 
           # Existing feature guards.
           grep -q 'eventLabelVersion=1' _site/cloud-sync.js
