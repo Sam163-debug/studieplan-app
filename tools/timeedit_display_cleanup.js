@@ -34,12 +34,14 @@ function teNormalizeImportedEvent(event){
       updated.title=teCleanTimeEditTitle(updated.title,updated.categoryId);
     }
     updated.teCleanedTitleV1=true;
+    teMigrationChanged=true;
   }
   // The old ICS import defaulted to "show", so migrate existing imports
   // once. From then on, an explicit checkbox selection is authoritative.
   if(!updated.teDescriptionDefaultV1){
     updated.showDescription=false;
     updated.teDescriptionDefaultV1=true;
+    teMigrationChanged=true;
   }
   return updated;
 }
