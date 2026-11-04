@@ -1,5 +1,5 @@
 /* Import privately into local state from TimeEdit iCalendar files. */
-const TE_DEFAULT_LINK='https://cloud.timeedit.net/hh/web/schema/ri1Xl034Z0104ZQQ0lZ675XY6QyQ5Y6ulQWw7Y613v5QW1q8359Z4WQ5ubbc9Kpq6XcQbloZo4ujb4n6f5oQZZcZojQ0WZqQZZQbcbcQ3Y00X53Y00.ics';
+const TE_DEFAULT_LINK='';
 let teImportPreview=null;
 function teStatus(message,error=false){
   const el=document.getElementById('timeeditImportStatus');
