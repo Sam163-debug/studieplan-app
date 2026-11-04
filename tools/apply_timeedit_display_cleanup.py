@@ -85,7 +85,7 @@ html=html.replace('</style>',css+'</style>',1)
 # caused the background of each event to appear almost white/blue. Use the
 # chosen fully opaque course color as the lowest background layer, and overlay
 # just a faint diagonal pattern on top. Keep other origins' styles unchanged.
-old_style="function styleFor(e){const base=validHex(category(e.categoryId).color);let bg=rgba(base,.16);if(e.origin==='timeedit')bg=\`repeating-linear-gradient(135deg,\${rgba(base,.30)} 0,\${rgba(base,.30)} 7px,\${rgba(base,.08)} 7px,\${rgba(base,.08)} 14px)\`;else if(e.origin==='gym')bg=\`radial-gradient(circle at 4px 4px,\${rgba(base,.38)} 0 2px,\${rgba(base,.10)} 2.5px 100%)\`;return {borderColor:base,background:bg,color:'#1f2937'}}"
+old_style=r'''function styleFor(e){const base=validHex(category(e.categoryId).color);let bg=rgba(base,.16);if(e.origin==='timeedit')bg=`repeating-linear-gradient(135deg,${rgba(base,.30)} 0,${rgba(base,.30)} 7px,${rgba(base,.08)} 7px,${rgba(base,.08)} 14px)`;else if(e.origin==='gym')bg=`radial-gradient(circle at 4px 4px,${rgba(base,.38)} 0 2px,${rgba(base,.10)} 2.5px 100%)`;return {borderColor:base,background:bg,color:'#1f2937'}}'''
 new_style=r'''function teVisualCourseColor(e){
   const cat=category(e.categoryId);
   const key=[e.categoryId||'',cat.name||'',e.course||'',e.title||''].join(' ').toLocaleLowerCase('sv-SE');
