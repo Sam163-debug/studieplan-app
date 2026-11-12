@@ -61,6 +61,11 @@ if html.count('data-note-action="strikethrough"') != 5:
 for guard in ("document.execCommand('strikeThrough'", "function noteHasStrikethrough", "'S','STRIKE','DEL'"):
     if guard not in js:
         raise SystemExit('Missing strikethrough integration: ' + guard)
+sw=root / 'service-worker.js'
+service_worker=sw.read_text(encoding='utf-8')
+if 'studieplan-shell-v13' not in service_worker:
+    raise SystemExit('Service worker v13 anchor missing')
+sw.write_text(service_worker.replace('studieplan-shell-v13','studieplan-shell-v14'),encoding='utf-8')
 index.write_text(html, encoding='utf-8')
 app.write_text(js, encoding='utf-8')
 print('Strikethrough enabled for all five note editors with autosave and toolbar sync')
