@@ -104,6 +104,9 @@ jobs:
           python3 tools/apply_timeedit_display_cleanup.py _site
           node tools/test_timeedit_display.cjs tools/timeedit_display_cleanup.js
 
+          # Add Word-style strikethrough to all five rich-text note editors.
+          python3 tools/apply_notes_strikethrough.py _site
+
           test -s _site/index.html
           test -s _site/app.js
           test -s _site/cloud-sync.js
@@ -156,7 +159,7 @@ jobs:
             exit 1
           fi
           grep -q 'Studieplan status' _site/cloud-sync.js
-          grep -q 'studieplan-shell-v13' _site/service-worker.js
+          grep -q 'studieplan-shell-v14' _site/service-worker.js
           grep -q 'id="notesPage"' _site/index.html
           grep -q 'id="notesET4012"' _site/index.html
           grep -q 'id="notesMA4026"' _site/index.html
@@ -194,6 +197,12 @@ jobs:
           grep -q "closeEventModal('backdrop')" _site/app.js
           grep -Fq "e.key==='Escape'" _site/app.js
           grep -Fq "stopImmediatePropagation()" _site/app.js
+
+          # Strikethrough toolbar, save/sanitizer, and selection-state guards.
+          test "$(grep -o 'data-note-action="strikethrough"' _site/index.html | wc -l)" -eq 5
+          grep -Fq "document.execCommand('strikeThrough'" _site/app.js
+          grep -Fq "'S','STRIKE','DEL'" _site/app.js
+          grep -q 'function noteHasStrikethrough' _site/app.js
 
           # Editor stability guards.
           grep -q 'function applyNoteFontToSelectedText' _site/app.js
